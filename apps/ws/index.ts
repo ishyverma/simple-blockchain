@@ -1,5 +1,5 @@
 import prisma from "@repo/db/client";
-import { BLOCKCHAIN, MINERS, proofOfWork } from "@repo/store/utils";
+import { BLOCKCHAIN, MINERS, proofOfWork, verifyPow } from "@repo/store/utils";
 import WebSocket, { WebSocketServer } from "ws";
 
 const wss = new WebSocketServer({ port: 8080 })
@@ -7,16 +7,37 @@ const wss = new WebSocketServer({ port: 8080 })
 let id = 1;
 
 wss.on("connection", ws => {
-    ws.on("message", data => {
+    ws.on("message", async data => {
         const message = JSON.parse(data.toString())
         switch (message.type) {
             case "send_money": {
                 const from = message.payload.from // Id of the user who is sending money
                 const to = message.payload.to  // Id of the user who is recieving money
                 const amount = message.payload.amount
-
+                
                 // Add this 64 times 0 if there is no block in the blockchain for the first time and after that take the last hash from the blockchain
                 const previousHash = message.payload.previousHash
+
+                try {
+                    const promiseUser = await prisma.user.findUnique({
+                        where: {
+                            id: from
+                        }
+                    })
+
+                    if (!promiseUser) {
+                        ws.send("There is no such user")
+                        return
+                    } 
+
+                    if (promiseUser.balance < amount) {
+                        ws.send("Not enough balance")
+                        return
+                    }
+ 
+                } catch (error) {
+                    console.log("SEND_MONEY", error)
+                }
 
                 MINERS.map(miner => miner.ws.send(JSON.stringify({
                     type: "mine",
@@ -27,34 +48,27 @@ wss.on("connection", ws => {
                         previousHash
                     }
                 })))
-                const promiseUser = prisma.user.findUnique({
-                    where: {
-                        id: from
-                    }
-                })
-                promiseUser.then(response => {
-                    if (!response) {
-                        ws.send("There is no such user")
-                        return
-                    }
-                    if (response.balance < amount) {
-                        ws.send("Not enough balance")
-                    }
-                })
                 break;
             }
             // If miner wants to mine
             case "join_mine": {
                 MINERS.push({
                     id: message.payload.id,
-                    ws
+                    ws,
+                    blockChainCopy: BLOCKCHAIN
                 })
                 ws.send("Ready to mine")
                 break;
             }
             case "left_mine": {
                 const id = message.payload.id
-                MINERS.filter(miner => miner.id !== id)
+                const miner = MINERS.findIndex(miner => miner.ws === ws)
+                if (miner === -1) {
+                    ws.send("There is no such miner")
+                    return 
+                }
+
+                MINERS.splice(miner, 1)
                 ws.send("Mining stopped")
                 break;
             }
@@ -97,13 +111,80 @@ wss.on("connection", ws => {
             }
 
             case "verify_hash": {
+                const hash = message.payload.hash
+                const nonce = message.payload.nonce
+                const data = message.payload.data
+                const blockId = message.payload.blockId
 
+                const verify = verifyPow(nonce, blockId, data, hash)
+
+                if (verify) {
+                    ws.send("Verified HASH")
+                }
+
+                const miner = MINERS.find(miner => miner.ws === ws)
+
+                if (!miner) {
+                    ws.send("Miners not found")
+                    return
+                }
+
+                const userId = miner.id
+
+                try {
+                    const miner = await prisma.miner.update({
+                        where: {
+                            id: userId
+                        },
+                        data: {
+                            balance: {
+                                increment: 100
+                            }
+                        }
+                    })
+                    if (!miner) {
+                        ws.send("There is no such miner")
+                        return
+                    } else {
+                        ws.send("100 Rs. creadited to your account")
+                    }
+                } catch (error) {
+                    
+                }
+
+                BLOCKCHAIN.push({
+                    currentHash: hash,
+                    data,
+                    id, // Block Id
+                    nonce,
+                    prevHash: BLOCKCHAIN.length ? BLOCKCHAIN[BLOCKCHAIN.length - 1].prevHash : "0".repeat(64)
+                })
+
+                MINERS.map(miner => {
+                    if (miner.ws !== ws) {
+                        miner.blockChainCopy.push({
+                            currentHash: hash,
+                            data,
+                            id,
+                            nonce,
+                            prevHash: BLOCKCHAIN.length ? BLOCKCHAIN[BLOCKCHAIN.length - 1].prevHash : "0".repeat(64)
+                        })
+                    }
+                })
+
+                id += 1
             }
         }
     })
 })
 
 wss.on("close", (ws: WebSocket) => {
-    MINERS.filter(miner => miner.ws !== ws)
-    ws.send("Disconnected From MINE")
+    const miner = MINERS.findIndex(miner => miner.ws === ws)
+
+    if (miner === -1) {
+        ws.send("There is no such miner")
+        return 
+    }
+                
+    MINERS.splice(miner, 1)
 })  

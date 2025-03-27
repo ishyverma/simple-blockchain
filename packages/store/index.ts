@@ -12,7 +12,8 @@ interface BlockchainType {
 
 interface MinerType {
     id: string;
-    ws: WebSocket
+    ws: WebSocket;
+    blockChainCopy: BlockchainType[]
 }
 
 export const proofOfWork = (blockNumber: number, data: string, prevHash: string) => {
@@ -31,6 +32,17 @@ export const proofOfWork = (blockNumber: number, data: string, prevHash: string)
             nonce += 1
         }
     }
+}
+
+export const verifyPow = (nonce: string, blockNumber: string, data: string, hash: string) => {
+    const previousHash = BLOCKCHAIN.slice(-1)[0].prevHash ?? "0".repeat(64)
+    if (hash.startsWith("0000")) {
+        const verifyHash = crypto.createHash("sha256").update(`${blockNumber}${data}${previousHash}${nonce}`).digest("hex")
+        if (verifyHash === hash) {
+            return true
+        }
+    }
+    return false
 }
 
 export let BLOCKCHAIN: BlockchainType[] = []
