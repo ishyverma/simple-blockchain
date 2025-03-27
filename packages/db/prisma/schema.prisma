@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Type {
+  User
+  Miner
+}
+
+model User {
+  id  String  @id @default(uuid())
+  type  Type  @default(User)
+  username  String  @unique
+  password  String
+  balance Int @default(0)
+}
+
+model Miner {
+  id  String  @id @default(uuid())
+  type  Type  @default(Miner)
+  username  String @unique
+  password  String
+  balance Int @default(0)
+}

@@ -1,0 +1,17 @@
+{
+  "name": "@repo/ws",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@types/ws": "^8.18.0",
+    "ws": "^8.18.1",
+    "@repo/db": "*",
+    "@repo/store": "*"
+  }
+}
