@@ -13,17 +13,17 @@ enum Type {
 }
 
 model User {
-  id  String  @id @default(uuid())
-  type  Type  @default(User)
-  username  String  @unique
-  password  String
-  balance Int @default(0)
+  id       String @id @default(uuid())
+  type     Type   @default(User)
+  username String @unique
+  password String
+  balance  Int    @default(0)
 }
 
 model Miner {
-  id  String  @id @default(uuid())
-  type  Type  @default(Miner)
-  username  String @unique
-  password  String
-  balance Int @default(0)
+  id       String @id @default(uuid())
+  type     Type   @default(Miner)
+  username String @unique
+  password String
+  balance  Int    @default(0)
 }
