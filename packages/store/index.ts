@@ -21,6 +21,7 @@ export const proofOfWork = (blockNumber: number, data: string, prevHash: string)
     while (true) {
         const hash = crypto.createHash("sha256").update(`${blockNumber}${data}${prevHash}${nonce}`).digest("hex")
         if (hash.startsWith("0000")) {
+            console.log(hash)
             return {
                 blockNumber,
                 data,
