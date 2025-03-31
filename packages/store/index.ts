@@ -21,7 +21,7 @@ export const proofOfWork = (blockNumber: number, data: string, prevHash: string)
     while (true) {
         const hash = crypto.createHash("sha256").update(`${blockNumber}${data}${prevHash}${nonce}`).digest("hex")
         if (hash.startsWith("0000")) {
-            console.log(hash)
+            console.log('from pow', hash, prevHash)
             return {
                 blockNumber,
                 data,
@@ -35,11 +35,14 @@ export const proofOfWork = (blockNumber: number, data: string, prevHash: string)
     }
 }
 
-export const verifyPow = (nonce: string, blockNumber: string, data: string, hash: string) => {
-    const previousHash = BLOCKCHAIN.slice(-1)[0].prevHash ?? "0".repeat(64)
+export const verifyPow = (nonce: string, blockNumber: string, data: string, hash: string, prevHash: string) => {
+    console.log("hash", hash)
     if (hash.startsWith("0000")) {
-        const verifyHash = crypto.createHash("sha256").update(`${blockNumber}${data}${previousHash}${nonce}`).digest("hex")
+        console.log('hello', prevHash)
+        const verifyHash = crypto.createHash("sha256").update(`${blockNumber}${data}${prevHash}${nonce}`).digest("hex")
+        console.log(verifyHash, hash)
         if (verifyHash === hash) {
+            console.log('inside the hash == verifyHash')
             return true
         }
     }

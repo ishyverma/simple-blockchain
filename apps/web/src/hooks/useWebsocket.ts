@@ -5,11 +5,12 @@ export const useWebsocket = (url: string) => {
   const [error] = useState<string>("");
   const [isConnected, setIsConnected] = useState(false);
   const ws = useRef<WebSocket | null>(null);
-  const sendMessage = (event: any) => {
-    if (ws.current) {
-        ws.current.send(JSON.stringify(event))
+
+  const sendMessage = ((message: any) => {
+    if (isConnected) {
+      ws.current?.send(JSON.stringify(message));
     }
-  }
+  });
 
   useEffect(() => {
     ws.current = new WebSocket(url);
@@ -29,7 +30,7 @@ export const useWebsocket = (url: string) => {
     return () => {
       ws.current?.close();
     };
-  }, [url]);
+  }, []);
 
-  return { data, error, sendMessage, isConnected }
+  return { data, error, sendMessage, isConnected, ws: ws.current }
 };

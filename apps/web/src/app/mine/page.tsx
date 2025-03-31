@@ -3,30 +3,34 @@
 import MinerCard from "@/components/ui/miner-card";
 import { useWebsocket } from "@/hooks/useWebsocket";
 import { useSession } from "next-auth/react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 const Mine = () => {
     const { data: session } = useSession()
-    const { data, error, sendMessage, isConnected } = useWebsocket("ws://localhost:8080")
+    console.log(session)
+    const { data, error, isConnected, sendMessage, ws } = useWebsocket("ws://localhost:8080")
+    console.log(ws)
+    const connected = useRef(false)
 
     useEffect(() => {
-        if(isConnected) {
-            sendMessage({
+        if(isConnected && session?.user.id) {
+            console.log(session.user.id)
+            sendMessage?.({
                 type: "join_mine",
                 payload: {
-                    id: session?.user.id
+                    id: session?.user.id,
                 }
             })
         }
-    }, [isConnected])
+    }, [isConnected, session?.user.id])
 
-    if (!session) {
-        return null
+    if (!session || !ws) {
+        return null;
     }
 
     return (  
         <div>
-            <MinerCard sendMessage={sendMessage} data={data} />
+            <MinerCard ws={ws} sendMessage={sendMessage} data={data} id={session.user.id} />
         </div>
     );
 }
