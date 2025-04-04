@@ -3,7 +3,9 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "dev": "bun run index.ts"
+    "dev": "bun run index.ts",
+    "prebuild": "turbo run build --filter=ws-server",
+    "build": "bun build src/index.ts --outdir=dist"
   },
   "devDependencies": {
     "@types/bun": "latest"
