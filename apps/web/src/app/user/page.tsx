@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 
 const User = () => {
     const { data: session } = useSession();
-    const { isConnected, sendMessage, data, error } = useWebsocket("ws://localhost:8080")
+    const { isConnected, sendMessage, data, error } = useWebsocket("https://simple-blockchain-o3o4.onrender.com/")
 
     if(!session) {
         return null

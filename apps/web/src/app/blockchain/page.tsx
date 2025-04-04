@@ -25,7 +25,7 @@ interface MessageType {
 type Props = {}
 
 const Blockchain = (props: Props) => {
-  const { data, error, isConnected, sendMessage, ws } = useWebsocket("ws://localhost:8080")
+  const { data, error, isConnected, sendMessage, ws } = useWebsocket("https://simple-blockchain-o3o4.onrender.com/")
   const [message, setMessage] = useState<DataProps[]>([])
 
   useEffect(() => {

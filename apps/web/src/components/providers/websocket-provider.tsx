@@ -17,7 +17,7 @@ const WebSocketContext = createContext<{
 
 const WebSocketProvider = ({ children }: Props) => {
   const { data, error, isConnected, sendMessage, ws } = useWebsocket(
-    "ws://localhost:8080"
+    "https://simple-blockchain-o3o4.onrender.com/"
   );
   return (
     <WebSocketContext.Provider

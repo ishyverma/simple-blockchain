@@ -8,7 +8,7 @@ import { useEffect, useRef } from "react";
 const Mine = () => {
     const { data: session } = useSession()
     console.log(session)
-    const { data, error, isConnected, sendMessage, ws } = useWebsocket("ws://localhost:8080")
+    const { data, error, isConnected, sendMessage, ws } = useWebsocket("https://simple-blockchain-o3o4.onrender.com/")
     console.log(ws)
     const connected = useRef(false)
 
