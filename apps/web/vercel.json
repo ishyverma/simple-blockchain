@@ -1,0 +1,10 @@
+{
+  "projects": {
+    "default": {
+      "source": "apps/client",
+      "outputDirectory": "apps/client/.next",
+      "buildCommand": "npm turbo run build --filter=client...",
+      "installCommand": "npm install"
+    }
+  }
+}
